@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Digital Reconstruction of Artifacts with AI</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: "Segoe UI", Arial, sans-serif;
+    }
+
+    body, html {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: #f3f8f4;
+    }
+
+    .page {
+      width: 100%;
+      height: 100vh;
+      display: none;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+      text-align: center;
+      padding: 20px;
+    }
+
+    .page.active {
+      display: flex;
+    }
+
+    /* Pastel colors */
+    :root {
+      --pastel-green: #cfe8cc;
+      --pastel-brown: #d8bfa3;
+      --accent-green: #8bbf8a;
+      --accent-brown: #b48a68;
+    }
+
+    /* Landing Page */
+    #page-landing {
+      background: var(--pastel-green);
+      color: #2f3e2f;
+      animation: fadeIn 1s ease;
+    }
+
+    #page-landing h1 {
+      font-size: 2.4rem;
+      margin-bottom: 20px;
+      text-shadow: 1px 1px 3px rgba(0,0,0,0.15);
+    }
+
+    .btn {
+      padding: 12px 28px;
+      margin-top: 20px;
+      font-size: 1.1rem;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: 0.25s ease;
+    }
+
+    .btn:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 4px 10px rgba(0,0,0,0.25);
+    }
+
+    .btn-primary {
+      background: var(--accent-brown);
+      color: white;
+      font-weight: bold;
+    }
+
+    .btn-secondary {
+      background: var(--accent-green);
+      color: white;
+      font-weight: bold;
+    }
+
+    .btn-accept {
+      background: #6a9ad2;
+      color: white;
+      font-weight: bold;
+    }
+
+    /* Page 2 */
+    #page-broken {
+      background: #f7f7f7;
+      color: #333;
+      animation: fadeIn 1s ease;
+    }
+
+    #page-broken h2 {
+      margin-bottom: 10px;
+      font-size: 1.8rem;
+    }
+
+    #page-broken p {
+      max-width: 700px;
+      margin: 0 auto 30px;
+      line-height: 1.5;
+      font-size: 1rem;
+      color: #555;
+    }
+
+    /* Keep pieces away from buttons */
+    .pot-view {
+      margin-bottom: 60px;
+    }
+
+    .grid-container {
+      display: grid;
+      grid-template-columns: repeat(4, 90px);
+      grid-gap: 22px;
+      justify-content: center;
+      align-items: center;
+      width: 420px;
+      height: 300px;
+    }
+
+    .piece {
+      width: 90px;
+      height: 90px;
+      background: var(--pastel-brown);
+      border-radius: 20px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.25);
+      opacity: 0.95;
+      transition: transform 1.5s ease-in-out, border-radius 1.5s ease-in-out, background 1.5s ease-in-out;
+    }
+
+    /* Broken shapes */
+    .piece:nth-child(1) { border-radius: 50% 20% 60% 30%; }
+    .piece:nth-child(2) { border-radius: 40% 70% 20% 60%; }
+    .piece:nth-child(3) { border-radius: 20% 60% 80% 30%; }
+    .piece:nth-child(4) { border-radius: 70% 30% 20% 50%; }
+    .piece:nth-child(5) { border-radius: 30% 60% 70% 20%; }
+    .piece:nth-child(6) { border-radius: 60% 20% 20% 80%; }
+    .piece:nth-child(7) { border-radius: 20% 70% 50% 40%; }
+    .piece:nth-child(8) { border-radius: 80% 20% 60% 10%; }
+
+    /* Pot animation */
+    .animate-pot .piece {
+      background: var(--accent-brown);
+      border-radius: 40% 40% 55% 55%;
+    }
+
+    .animate-pot .piece:nth-child(1) { transform: translate(40px, 140px) scale(1.05); }
+    .animate-pot .piece:nth-child(2) { transform: translate(120px, 140px) scale(1.05); }
+    .animate-pot .piece:nth-child(3) { transform: translate(0px, 70px) scale(1.05); }
+    .animate-pot .piece:nth-child(4) { transform: translate(160px, 70px) scale(1.05); }
+    .animate-pot .piece:nth-child(5) { transform: translate(40px, 70px) scale(1.05); }
+    .animate-pot .piece:nth-child(6) { transform: translate(120px, 70px) scale(1.05); }
+    .animate-pot .piece:nth-child(7) { transform: translate(40px, 0px) scale(1.05); }
+    .animate-pot .piece:nth-child(8) { transform: translate(120px, 0px) scale(1.05); }
+
+    .controls {
+      margin-top: 10px;
+    }
+
+    .hint {
+  font-size: 0.95rem;
+  color: #333;
+  margin-top: 10px;
+}
+
+.hint-active {
+  font-weight: bold;
+  color: #2f3e2f;
+  animation: pulseText 1s infinite;
+}
+
+@keyframes pulseText {
+  0%   { opacity: 1; }
+  50%  { opacity: 0.4; }
+  100% { opacity: 1; }
+}
+
+.hint-success {
+  font-weight: bold;
+  color: #28a745; /* green */
+  animation: blinkSuccess 1s infinite;
+}
+
+@keyframes blinkSuccess {
+  0%   { opacity: 1; }
+  50%  { opacity: 0.4; }
+  100% { opacity: 1; }
+}
+
+
+
+    /* Page 3 */
+    #page-xr {
+      background: #1a1f24;
+      color: #e5e7eb;
+      animation: fadeIn 1s ease;
+    }
+
+    #page-xr h2 {
+      margin-bottom: 10px;
+      font-size: 1.8rem;
+    }
+
+    #page-xr p {
+      max-width: 650px;
+      margin: 0 auto 20px;
+      line-height: 1.5;
+    }
+
+     .xr-visual {
+    width: 340px;
+    height: 260px;
+    border-radius: 20px;
+    border: 2px solid #9ae6b4;
+    box-shadow: 0 0 20px rgba(154,230,180,0.4);
+    background: radial-gradient(circle at top, rgba(154,230,180,0.25), transparent 55%),
+                radial-gradient(circle at bottom, rgba(56,189,248,0.2), #1a1f24 70%);
+    position: relative;
+    overflow: hidden;
+    margin-top: 20px;
+  }
+
+  .xr-pot {
+    position: absolute;
+    left: 50%;
+    top: 55%;
+    width: 130px;
+    height: 160px;
+    margin-left: -65px;
+    margin-top: -80px;
+    border-radius: 12px;
+    animation: float 3s ease-in-out infinite;
+  }
+
+  @keyframes float {
+    0%   { transform: translateY(0); }
+    50%  { transform: translateY(-10px); }
+    100% { transform: translateY(0); }
+  }
+  </style>
+</head>
+<body>
+
+  <!-- PAGE 1 -->
+  <section id="page-landing" class="page active">
+    <h1>Digital Reconstruction of Broken Artifacts with AI</h1>
+    <button class="btn btn-primary" id="btn-explore">Explore</button>
+  </section>
+
+  <!-- PAGE 2 -->
+  <section id="page-broken" class="page">
+    <h2>Broken Pieces to Reconstructed Pot</h2>
+    <p>
+      Archeologists scan each fragment using 3D scanners.  
+      AI analyzes the shapes, suggests matches, and reconstructs the artifact digitally.  
+      These reconstructions can then be streamed to XR glasses for immersive assembly.
+    </p>
+
+    <div class="pot-view" id="pot-view">
+      <div class="grid-container" id="pieces-grid">
+	   
+		<img src="images/piece1.png" alt="Piece 1" class="piece" />
+		<img src="images/piece2.png" alt="Piece 2" class="piece" />
+		<img src="images/piece3.png" alt="Piece 3" class="piece" />
+		<img src="images/piece4.png" alt="Piece 4" class="piece" />
+		<img src="images/piece5.png" alt="Piece 5" class="piece" />
+		<img src="images/piece6.png" alt="Piece 6" class="piece" />
+		<img src="images/piece2.png" alt="Piece 6" class="piece" />
+		<img src="images/piece4.png" alt="Piece 6" class="piece" />
+		
+      </div>
+    </div>
+
+    <div class="controls">
+      <button class="btn btn-secondary" id="btn-recreate">Recreate</button>
+      <button class="btn btn-accept" id="btn-accept" disabled>Accept solution</button>
+      <div class="hint" id="hint-text">Click “Recreate” to see the AI assemble the pot.</div>
+    </div>
+  </section>
+
+  <!-- PAGE 3 -->
+  <section id="page-xr" class="page">
+    <h2>Streaming to XR</h2>
+    <p>
+      The reconstructed artifact is now streamed to XR glasses.  
+      Put on the headset and watch the pot float like a hologram.  
+      Walk around it, inspect details, and interact using hand gestures.
+    </p>
+
+    <div class="xr-visual">
+      <div class="xr-pot">
+		
+		<!-- xr-pot is now directly an image -->
+    <img src="images/reconstructedclayp.png" alt="Reconstructed Pot" class="xr-pot" />
+	  </div>
+    </div>
+  </section>
+
+  <script>
+  const pageLanding = document.getElementById('page-landing');
+  const pageBroken  = document.getElementById('page-broken');
+  const pageXR      = document.getElementById('page-xr');
+
+  const btnExplore  = document.getElementById('btn-explore');
+  const btnRecreate = document.getElementById('btn-recreate');
+  const btnAccept   = document.getElementById('btn-accept');
+  const potView     = document.getElementById('pot-view');
+  const hintText    = document.getElementById('hint-text');
+  const piecesGrid  = document.getElementById('pieces-grid');
+
+  function showPage(page) {
+    [pageLanding, pageBroken, pageXR].forEach(p => p.classList.remove('active'));
+    page.classList.add('active');
+  }
+
+  btnExplore.addEventListener('click', () => {
+    showPage(pageBroken);
+    potView.classList.remove('animate-pot');
+    btnRecreate.disabled = false;
+    btnAccept.disabled = true;
+    hintText.textContent = 'Click “Recreate” to see the AI assemble the pot.';
+  });
+  btnRecreate.addEventListener('click', () => {
+  hintText.textContent = 'AI is reconstructing the artifact...';
+  hintText.classList.add('hint-active');   // 🔥 add animation
+  btnRecreate.disabled = true;
+
+  const pieces = document.querySelectorAll('.piece');
+
+  // Shuffle pieces randomly every 1.5s
+  const shuffleInterval = setInterval(() => {
+    pieces.forEach(piece => {
+      const randX = Math.floor(Math.random() * 200 - 100);
+      const randY = Math.floor(Math.random() * 200 - 100);
+      const randRot = Math.floor(Math.random() * 360);
+      piece.style.transform = `translate(${randX}px, ${randY}px) rotate(${randRot}deg)`;
+    });
+  }, 1500);
+
+  // After 2 minutes, stop shuffling and show reconstructed pot
+  setTimeout(() => {
+    clearInterval(shuffleInterval);
+
+    piecesGrid.innerHTML = `
+      <img src="images/reconstructedclayp.png" 
+           alt="Reconstructed Pot" 
+           style="width:220px; height:auto; border-radius:20px; box-shadow:0 4px 12px rgba(0,0,0,0.3);" />
+    `;
+    hintText.textContent = '✅ Reconstruction complete. Click “Accept solution”.';
+  hintText.classList.remove('hint-active');   // remove old animation
+  hintText.classList.add('hint-success');     // add success animation
+  btnAccept.disabled = false;
+
+  }, 15000); // 15 seconds
+});
+ 
+
+  btnAccept.addEventListener('click', () => {
+    showPage(pageXR);
+  });
+</script>
+
+</body>
+</html>
