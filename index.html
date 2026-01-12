@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Digital Reconstruction of Artifacts with AI</title>
+
+<script type="module"
+  src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js">
+</script>
+
+<style>
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  font-family: "Segoe UI", Arial, sans-serif;
+}
+
+body, html {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: #f3f8f4;
+}
+
+.page {
+  width: 100%;
+  height: 100vh;
+  display: none;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  text-align: center;
+  padding: 20px;
+}
+
+.page.active { display: flex; }
+
+:root {
+  --pastel-green: #cfe8cc;
+  --accent-brown: #b48a68;
+  --accent-green: #8bbf8a;
+}
+
+/* ---------- LANDING ---------- */
+#page-landing {
+  background: var(--pastel-green);
+}
+
+h1 { font-size: 2.4rem; margin-bottom: 20px; }
+
+.btn {
+  padding: 12px 28px;
+  font-size: 1.1rem;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.btn-primary { background: var(--accent-brown); color: white; }
+.btn-secondary { background: var(--accent-green); color: white; }
+.btn-accept { background: #6a9ad2; color: white; }
+
+/* ---------- PAGE 2 ---------- */
+#page-broken { background: #f7f7f7; }
+
+.grid-container {
+  display: grid;
+  grid-template-columns: repeat(3, 200px);
+  grid-gap: 32px;
+  margin-top: 20px;
+}
+
+.card {
+  background: #d8bfa3;
+  border-radius: 20px;
+  box-shadow: 0 6px 14px rgba(0,0,0,0.25);
+}
+
+.piece-wrapper {
+  width: 200px;
+  height: 200px;
+  cursor: grab;
+  transition: transform 1.2s ease, box-shadow 0.3s ease, opacity 1s ease;
+}
+
+.piece-wrapper:hover {
+  box-shadow: 0 0 18px rgba(139,191,138,0.9);
+  transform: scale(1.05);
+}
+
+.piece-wrapper.dragging {
+  opacity: 0.6;
+  cursor: grabbing;
+}
+
+model-viewer {
+  width: 100%;
+  height: 100%;
+  border-radius: 20px;
+}
+
+/* Final pot (page 2) */
+.final-pot {
+  width: 380px;
+  height: 380px;
+  padding: 16px;
+}
+
+/* ---------- HINTS ---------- */
+.hint {
+  margin-top: 10px;
+  font-size: 0.95rem;
+}
+
+.hint-active {
+  font-weight: bold;
+  animation: pulse 1s infinite;
+}
+
+@keyframes pulse {
+  0% { opacity: 1; }
+  50% { opacity: 0.4; }
+  100% { opacity: 1; }
+}
+
+.hint-success {
+  font-weight: bold;
+  color: green;
+}
+
+/* ---------- XR PAGE ---------- */
+#page-xr {
+  background: #1a1f24;
+  color: #e5e7eb;
+}
+
+.xr-box {
+  width: 420px;
+  height: 420px;
+  padding: 20px;
+  background: #ffffff;
+}
+
+#btn-recreate {
+  margin-top: 32px; /* increase if you want more space */
+}
+
+#btn-accept {
+  margin-top: 16px;
+}
+
+.final-pot-wrapper {
+  width: 320px;
+  height: 320px;
+  margin-left: 40px;   /* ⬅️ moves pot to the right */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+}
+
+.final-pot-wrapper model-viewer {
+  width: 280px;
+  height: 280px;
+}
+
+.final-pot-wrapper {
+  animation: fadeInScale 0.8s ease-out;
+}
+
+@keyframes fadeInScale {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+</style>
+</head>
+
+<body>
+
+<!-- PAGE 1 -->
+<section id="page-landing" class="page active">
+  <h1>Digital Reconstruction of Broken Artifacts with AI</h1>
+  <button class="btn btn-primary" id="btn-explore">Explore</button>
+</section>
+
+<!-- PAGE 2 -->
+<section id="page-broken" class="page">
+  <h2>Broken Pieces</h2>
+  <p>AI analyzes scanned fragments and suggests how they fit together.</p>
+
+  <div class="grid-container" id="pieces-grid">
+
+    <div class="piece-wrapper card" draggable="true">
+      <model-viewer src="models/shard1.glb" camera-controls camera-orbit="0deg 70deg 1.6m"></model-viewer>
+    </div>
+
+    <div class="piece-wrapper card" draggable="true">
+      <model-viewer src="models/shard2.glb" camera-controls camera-orbit="45deg 70deg 1.6m"></model-viewer>
+    </div>
+
+    <div class="piece-wrapper card" draggable="true">
+      <model-viewer src="models/shard3.glb" camera-controls camera-orbit="-45deg 70deg 1.6m"></model-viewer>
+    </div>
+
+    <div class="piece-wrapper card" draggable="true">
+      <model-viewer src="models/shard4.glb" camera-controls camera-orbit="90deg 70deg 1.6m"></model-viewer>
+    </div>
+
+    <div class="piece-wrapper card" draggable="true">
+      <model-viewer src="models/shard5.glb" camera-controls camera-orbit="180deg 70deg 1.6m"></model-viewer>
+    </div>
+
+    <div class="piece-wrapper card" draggable="true">
+      <model-viewer src="models/shard6.glb" camera-controls camera-orbit="-90deg 70deg 1.6m"></model-viewer>
+    </div>
+
+  </div>
+
+  <button class="btn btn-secondary" id="btn-recreate">Recreate</button>
+  <button class="btn btn-accept" id="btn-accept" disabled>Accept solution</button>
+  <div class="hint" id="hint-text">Click “Recreate” to see AI reconstruction.</div>
+</section>
+
+<!-- PAGE 3 -->
+<section id="page-xr" class="page">
+  <h2>Streaming to XR</h2>
+  <p>The reconstructed artifact appears as a hologram.</p>
+
+  <div class="xr-box">
+  <!--<div class="final-pot-wrapper">-->
+    <model-viewer
+      src="models/final_pot.glb"
+      camera-controls
+      auto-rotate
+      camera-orbit="0deg 75deg 1.8m">
+    </model-viewer>
+	<!--</div>-->
+  </div>
+</section>
+
+<script>
+const pageLanding = document.getElementById("page-landing");
+const pageBroken  = document.getElementById("page-broken");
+const pageXR      = document.getElementById("page-xr");
+
+const btnExplore  = document.getElementById("btn-explore");
+const btnRecreate = document.getElementById("btn-recreate");
+const btnAccept   = document.getElementById("btn-accept");
+const hintText    = document.getElementById("hint-text");
+const grid        = document.getElementById("pieces-grid");
+
+function show(page) {
+  [pageLanding, pageBroken, pageXR].forEach(p => p.classList.remove("active"));
+  page.classList.add("active");
+}
+
+btnExplore.onclick = () => show(pageBroken);
+
+/* ---------- DRAG REORDER ---------- */
+let dragged;
+document.querySelectorAll(".piece-wrapper").forEach(item => {
+  item.addEventListener("dragstart", () => {
+    dragged = item;
+    item.classList.add("dragging");
+  });
+  item.addEventListener("dragend", () => item.classList.remove("dragging"));
+  item.addEventListener("dragover", e => e.preventDefault());
+  item.addEventListener("drop", () => {
+    if (dragged !== item) {
+      const nodes = [...grid.children];
+      const d = nodes.indexOf(dragged);
+      const t = nodes.indexOf(item);
+      d < t ? grid.insertBefore(dragged, item.nextSibling)
+            : grid.insertBefore(dragged, item);
+    }
+  });
+});
+
+/* ---------- RECREATE ANIMATION ---------- */
+btnRecreate.onclick = () => {
+  btnRecreate.disabled = true;
+  hintText.textContent = "AI is analyzing fragments...";
+  hintText.classList.add("hint-active");
+
+  const pieces = document.querySelectorAll(".piece-wrapper");
+
+  /* STEP 1: SHUFFLE */
+  const shuffle = setInterval(() => {
+    pieces.forEach(p => {
+      const x = Math.random() * 160 - 80;
+      const y = Math.random() * 160 - 80;
+      const r = Math.random() * 360;
+      p.style.transform = `translate(${x}px, ${y}px) rotate(${r}deg)`;
+    });
+  }, 1200);
+
+  /* STEP 2: FLY TO CENTER */
+  setTimeout(() => {
+    clearInterval(shuffle);
+    pieces.forEach(p => {
+      p.style.transform = "translate(0,0) rotate(0deg) scale(0.2)";
+      p.style.opacity = "0";
+    });
+  }, 5000);
+
+  /* STEP 3: FINAL POT */
+  setTimeout(() => {
+    grid.innerHTML = `
+      <div class="final-pot-wrapper">
+		<model-viewer
+		  src="models/final_pot.glb"
+		  camera-controls
+		  auto-rotate
+		  exposure="1.2">
+		</model-viewer>
+    </div>
+    `;
+    hintText.textContent = "✅ Reconstruction complete.";
+    hintText.classList.remove("hint-active");
+    hintText.classList.add("hint-success");
+    btnAccept.disabled = false;
+  }, 5500);
+};
+
+btnAccept.onclick = () => show(pageXR);
+</script>
+
+</body>
+</html>
